@@ -1,7 +1,8 @@
-from .views import RegistrationView, UsernameValidationView, EmailValidationView, LogoutView, VerificationView, LoginView
+from .views import RegistrationView, UsernameValidationView, EmailValidationView, LogoutView, VerificationView, LoginView, account
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('register', RegistrationView.as_view(), name="register"),
@@ -13,4 +14,6 @@ urlpatterns = [
          name='validate_email'),
     path('activate/<uidb64>/<token>',
          VerificationView.as_view(), name='activate'),
+    path('myaccount/',account, name="account")
 ]
+

@@ -8,6 +8,7 @@ from django.core.paginator import Paginator
 import json
 from django.http import JsonResponse
 from userpreferences.models import UserPreference
+from userincome.models import UserIncome
 import datetime
 
 
@@ -26,16 +27,29 @@ def search_expenses(request):
 @login_required(login_url='/authentication/login')
 def index(request):
     categories = Category.objects.all()
-    expenses = Expense.objects.filter(owner=request.user)
+    expenses = Expense.objects.filter(owner=request.user).order_by('-date')
+
+    # Handle pagination
     paginator = Paginator(expenses, 5)
     page_number = request.GET.get('page')
-    page_obj = Paginator.get_page(paginator, page_number)
-    currency = UserPreference.objects.get(user=request.user).currency
+    page_obj = paginator.get_page(page_number)
+
+    # Handle user preferences for currency
+    try:
+        user_preferences = UserPreference.objects.get(user=request.user)
+        currency = user_preferences.currency
+    except UserPreference.DoesNotExist:
+        # If no UserPreference exists, set a default currency or create a new preference
+        currency = 'USD'  # Set your desired default currency here
+        # Optionally, create a UserPreference for the user
+        UserPreference.objects.create(user=request.user, currency=currency)
+
     context = {
-        'expenses': expenses,
+        'expenses': page_obj.object_list,
         'page_obj': page_obj,
-        'currency': currency
+        'currency': currency,
     }
+
     return render(request, 'expenses/index.html', context)
 
 
@@ -114,30 +128,50 @@ def delete_expense(request, id):
     return redirect('expenses')
 
 
+def get_total_income(user):
+    # Assuming you have a method to get total income
+    todays_date = datetime.date.today()
+    six_months_ago = todays_date - datetime.timedelta(days=30 * 6)
+    incomes = UserIncome.objects.filter(owner=user,
+                                        date__gte=six_months_ago, date__lte=todays_date)
+    return sum(income.amount for income in incomes)
+
 def expense_category_summary(request):
     todays_date = datetime.date.today()
-    six_months_ago = todays_date-datetime.timedelta(days=30*6)
+    six_months_ago = todays_date - datetime.timedelta(days=30 * 6)
     expenses = Expense.objects.filter(owner=request.user,
                                       date__gte=six_months_ago, date__lte=todays_date)
+    
     finalrep = {}
+    total_expenses = 0
 
     def get_category(expense):
         return expense.category
+
     category_list = list(set(map(get_category, expenses)))
 
     def get_expense_category_amount(category):
         amount = 0
         filtered_by_category = expenses.filter(category=category)
-
         for item in filtered_by_category:
             amount += item.amount
         return amount
 
-    for x in expenses:
-        for y in category_list:
-            finalrep[y] = get_expense_category_amount(y)
+    for y in category_list:
+        amount = get_expense_category_amount(y)
+        finalrep[y] = amount
+        total_expenses += amount
 
-    return JsonResponse({'expense_category_data': finalrep}, safe=False)
+    # Get total income (budget)
+    total_income = get_total_income(request.user)
+    balance_amount = total_income - total_expenses
+
+    return JsonResponse({
+        'expense_category_data': finalrep,
+        'total_amount': total_expenses,
+        'balance_amount': balance_amount
+    }, safe=False)
+
 
 
 def stats_view(request):

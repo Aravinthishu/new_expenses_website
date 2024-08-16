@@ -108,3 +108,51 @@ def delete_income(request, id):
     income.delete()
     messages.success(request, 'record removed')
     return redirect('income')
+
+import datetime
+from django.http import JsonResponse
+from .models import UserIncome  # Ensure your model is correctly imported
+
+
+def income_summary(request):
+    todays_date = datetime.date.today()
+    six_months_ago = todays_date - datetime.timedelta(days=30*6)
+    
+    incomes = UserIncome.objects.filter(
+        owner=request.user,
+        date__gte=six_months_ago,
+        date__lte=todays_date
+    )
+    
+    finalrep = {}
+    total_income = 0
+    
+    # Get a list of unique income sources
+    source_list = incomes.values_list('source', flat=True).distinct()
+    
+    # Function to calculate the total income for a specific source
+    def get_income_source_amount(source):
+        amount = 0
+        filtered_by_source = incomes.filter(source=source)
+        
+        for item in filtered_by_source:
+            amount += item.amount
+        return amount
+    
+    # Build the final report with source and their corresponding total amounts
+    for source in source_list:
+        amount = get_income_source_amount(source)
+        finalrep[source] = amount
+        total_income += amount  # Add the amount to the total_income
+    
+    print(finalrep)
+    print(total_income)
+    
+    return JsonResponse({
+        'income_source_data': finalrep,
+        'total_income': total_income
+    }, safe=False)
+
+
+def incomeChart_view(request):
+    return render(request, 'income/incomeChart.html')

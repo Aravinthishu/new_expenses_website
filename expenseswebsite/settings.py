@@ -26,6 +26,9 @@ SECRET_KEY = ')l0nv5udi#-6w(kes8pb$e!sp(c!)_6ffg4n=_k5zf8c!^vrec'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+# settings.py
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Application definition
@@ -39,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'expenses',
     'userpreferences',
-    'userincome'
+    'userincome',
+    'authentication',
 ]
 
 MIDDLEWARE = [
@@ -75,17 +79,24 @@ WSGI_APPLICATION = 'expenseswebsite.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_USER_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
+        'ENGINE': 'django.db.backends.mysql',  # MariaDB uses the MySQL backend
+        'NAME': 'expenses',         # Your database name
+        'USER': 'root',             # Your database username
+        'PASSWORD': 'Password',             # Your database password
+        'HOST': '127.0.0.1',        # The host where the database is located
+        'PORT': '3307',             # The port where the database is listening
     }
 }
 
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -125,7 +136,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'expenseswebsite/static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
 
 django_heroku.settings(locals())
 
@@ -133,11 +144,10 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger'
 }
 
-
-# email stuff
-EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'aravintharavinth6369@gmail.com'
+EMAIL_HOST_PASSWORD = 'qdqy zgpv lymv kbnm'
+EMAIL_HOST_USER_NAME = "ARAVINTH"  # Corrected the typo

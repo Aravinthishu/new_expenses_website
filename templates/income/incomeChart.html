@@ -10,7 +10,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="">Expenses Summary</a>
+            <a href="">Income Summary</a>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
            Summary
@@ -27,13 +27,9 @@
 
  <div class="row">
 <div class="col-md-8">
- <canvas id="myChart" width="400" height="400"></canvas>
- <div id="total-expenses">
-  <!-- Total Expenses will be displayed here -->
-</div>
-
-<div id="balance-amount">
-  <!-- Balance Amount will be displayed here -->
+  <canvas id="incomeChart" width="400" height="400"></canvas>
+  <div id="total-income">
+    <!-- Total Income will be displayed here -->
 </div>
     </div><div class="col-md-4">
     </div>
@@ -41,7 +37,7 @@
  </div>
 </div>
 
-<script src="{% static 'js/Stats.js' %}"></script>
+<script src="{% static 'js/incomechart.js' %}"></script>
 
 </script>
 

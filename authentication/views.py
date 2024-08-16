@@ -10,7 +10,7 @@ from validate_email import validate_email
 from django.contrib import messages
 from django.core.mail import EmailMessage
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils.encoding import force_bytes, force_text, DjangoUnicodeDecodeError
+from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -89,9 +89,10 @@ class RegistrationView(View):
                 email = EmailMessage(
                     email_subject,
                     'Hi '+user.username + ', Please the link below to activate your account \n'+activate_url,
-                    'noreply@semycolon.com',
+                    'aravintharavinth6369@gmail.com',
                     [email],
                 )
+                print(email)
                 email.send(fail_silently=False)
                 messages.success(request, 'Account successfully created')
                 return render(request, 'authentication/register.html')
@@ -129,11 +130,15 @@ class LoginView(View):
     def post(self, request):
         username = request.POST['username']
         password = request.POST['password']
+        print(username)
+        print(password)
 
         if username and password:
             user = auth.authenticate(username=username, password=password)
+            print("user",user)
 
             if user:
+                print("if user",user)
                 if user.is_active:
                     auth.login(request, user)
                     messages.success(request, 'Welcome, ' +
@@ -142,7 +147,7 @@ class LoginView(View):
                 messages.error(
                     request, 'Account is not active,please check your email')
                 return render(request, 'authentication/login.html')
-            messages.error(
+            else:messages.error(
                 request, 'Invalid credentials,try again')
             return render(request, 'authentication/login.html')
 
@@ -156,3 +161,27 @@ class LogoutView(View):
         auth.logout(request)
         messages.success(request, 'You have been logged out')
         return redirect('login')
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .forms import UserProfileForm
+from .models import UserProfile
+
+@login_required
+def account(request):
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        profile_form = UserProfileForm(request.POST, instance=user_profile)
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, 'Profile updated successfully')
+            return redirect('account')
+    else:
+        profile_form = UserProfileForm(instance=user_profile)
+
+    context = {
+        'profile_form': profile_form,
+    }
+    return render(request, 'authentication/myaccount.html', context)

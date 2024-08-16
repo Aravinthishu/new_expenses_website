@@ -1,0 +1,27 @@
+{
+    "version":2,
+    "builds":[
+        {
+            "src":"expenseswebsite/wsgi.py",
+            "use":"@vercel/python",
+            "congfig":{ "maxLambdaSize":"15mb", "runtime":"Python 3.12.4" }
+        },
+        {
+            "src":"build_files.sh",
+            "use":"@vercel/static-build",
+            "congfig":{
+                "distDir":"staticfiles_build"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src":"/static/(.*)",
+            "dest":"/static/$1"
+        },
+        {
+            "src":"/(.*)",
+            "dest":"expenseswebsite/wsgi.py"
+        }
+    ]
+}
